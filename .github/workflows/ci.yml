@@ -1,13 +1,11 @@
-# Builds CloudForge itself. Put this project in its own (private) repo and run it.
-# Signing: uses repo secrets if present. First run without secrets creates a key and uploads it
-# as artifact NEW-SIGNING-KEY: add its 3 values as secrets so future builds update cleanly.
+
 name: Build CloudForge
 on: [push, workflow_dispatch]
 jobs:
   apk:
     runs-on: ubuntu-latest
     env:
-      CF_CLIENT_ID: ${{ vars.CF_CLIENT_ID }}   # Settings > Secrets and variables > Actions > Variables
+      CF_CLIENT_ID: ${{ vars.CF_CLIENT_ID }}  
       KS_B64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
       KS_PASS_S: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
       KS_ALIAS_S: ${{ secrets.ANDROID_KEY_ALIAS }}
