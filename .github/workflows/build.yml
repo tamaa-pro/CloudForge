@@ -4,6 +4,7 @@
 # Output: <zip name>.apk, signed, uploaded as a plain (non-zipped) artifact, as a release asset, and copied next to the zip.
 # Loop guard: the APK commit touches no .zip, is pushed with GITHUB_TOKEN (which never triggers workflows) and carries [skip ci].
 name: CloudForge Build
+run-name: "${{ github.event.inputs.zip && format('CloudForge: rebuild {0}', github.event.inputs.zip) || github.event.head_commit.message }}"
 on:
   push:
     paths: ['projects/**']
