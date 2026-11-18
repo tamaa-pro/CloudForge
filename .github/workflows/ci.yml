@@ -1,4 +1,3 @@
-
 name: Build CloudForge
 on: [push, workflow_dispatch]
 jobs:
@@ -31,9 +30,19 @@ jobs:
             echo "::warning::No signing secrets found. Download artifact NEW-SIGNING-KEY and add the 3 secrets, or updates will not install over this build."
           fi
           echo "KS_PATH=$RUNNER_TEMP/ks.p12" >> "$GITHUB_ENV"
-      - run: gradle assembleRelease --no-daemon
+      - name: Build release
+        run: |
+          # tolerate: project inside a subfolder, or the zip itself committed to the repo
+          if [ -z "$(find . -maxdepth 3 -name settings.gradle.kts -not -path './.git/*' | head -1)" ]; then
+            Z=$(find . -maxdepth 3 -name '*.zip' -not -path './.git/*' | head -1)
+            if [ -n "$Z" ]; then echo "Unzipping $Z"; unzip -q -o "$Z" -d _proj; fi
+          fi
+          S=$(find . -name settings.gradle.kts -not -path './.git/*' | head -1)
+          if [ -z "$S" ]; then echo "::error::settings.gradle.kts not found. Repo contents:"; ls -la; exit 1; fi
+          cd "$(dirname "$S")"; echo "Building in $(pwd)"
+          gradle assembleRelease --no-daemon
       - uses: actions/upload-artifact@v4
-        with: { name: CloudForge-0.4, path: app/build/outputs/apk/release/*.apk }
+        with: { name: CloudForge-0.4, path: "**/build/outputs/apk/release/*.apk" }
       - uses: actions/upload-artifact@v4
         if: env.NEW_KEY == 'true'
         with: { name: NEW-SIGNING-KEY, path: newkey/, retention-days: 7 }
